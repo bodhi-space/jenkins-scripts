@@ -16,7 +16,7 @@ def abort(message):
     sys.exit(1)
 
 def merge_spec(spec_file):
-    spec_cmd = "git checkout --merge spec #{spec_file}"
+    spec_cmd = "git checkout --merge remotes/origin/spec #{spec_file}"
 
     time_taken(spec_cmd)
 
