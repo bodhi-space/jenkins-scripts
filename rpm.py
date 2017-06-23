@@ -57,7 +57,6 @@ def find_version(spec_file):
 def build_rpm(spec_file, tar_prefix, tarball):
     build_tarball(tar_prefix, tarball)
     build_compile(spec_file)
-    build_cleanup(spec_file, tarball)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', dest='name', help='repo name', required=True)
