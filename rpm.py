@@ -20,8 +20,8 @@ def merge_spec(spec_file):
 
     time_taken(spec_cmd)
 
-def build_tarball(tarball):
-    tarball_cmd = "git archive --format=tar.gz HEAD > #{tarball}"
+def build_tarball(tar_prefix, tarball):
+    tarball_cmd = "git archive --format=tar.gz --prefix=#{tar_prefix} HEAD > #{tarball}"
 
     time_taken(tarball_cmd)
 
@@ -54,8 +54,8 @@ def find_version(spec_file):
                 version = line.strip().split()[1]
     return version
 
-def build_rpm(spec_file, tarball):
-    build_tarball(tarball)
+def build_rpm(spec_file, tar_prefix, tarball):
+    build_tarball(tar_prefix, tarball)
     build_compile(spec_file)
     build_cleanup(spec_file, tarball)
 
@@ -75,9 +75,11 @@ os.chdir(src_dir)
 spec_file = "#{name}.spec"
 merge_spec(spec_file)
 version = find_version(spec_file)
+tar_dir = "#{name}-#{version}"
+tar_prefix = "#{tar_dir}/"
 tarball = "#{name}-#{version}.tar.gz"
 
 if cleanup:
     build_cleanup(spec_file, tarball)
 else:
-    build_rpm(spec_file, tarball)
+    build_rpm(spec_file, tar_prefix, tarball)
