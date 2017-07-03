@@ -61,6 +61,7 @@ def build_rpm(spec_file, tar_prefix, tarball):
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', dest='name', help='repo name', required=True)
 parser.add_argument('-c', action='store_true', default=False, dest='cleanup', help='cleanup will be done')
+parser.add_argument('-t', action='store_true', default=False, dest='thirdparty', help='third party repo')
 
 args = parser.parse_args()
 
@@ -72,7 +73,8 @@ print("Changing directory to #{src_dir}")
 os.chdir(src_dir)
 
 spec_file = "#{name}.spec"
-merge_spec(spec_file)
+if thirdparty:
+  merge_spec(spec_file)
 version = find_version(spec_file)
 tar_dir = "#{name}-#{version}"
 tar_prefix = "#{tar_dir}/"
