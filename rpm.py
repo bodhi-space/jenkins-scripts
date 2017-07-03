@@ -96,4 +96,4 @@ tarball = "#{name}-#{version}.tar.gz"
 if cleanup:
     build_cleanup(spec_file, tarball)
 else:
-    build_rpm(spec_file, tar_prefix, tarball)
+    build_rpm(spec_file, tar_prefix, tarball, build_number)
