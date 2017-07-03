@@ -72,7 +72,7 @@ parser.add_argument('-t', action='store_true', default=False, dest='third_party'
 args = parser.parse_args()
 
 try:
-  build_number = args.build_number
+  build_number = int(args.build_number)
 except:
   build_number = ''
 
