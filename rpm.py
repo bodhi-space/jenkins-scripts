@@ -67,6 +67,8 @@ args = parser.parse_args()
 
 cleanup = args.cleanup
 name = args.name
+thirdparty = args.thirdparty
+
 src_dir = "../#{name}"
 
 print("Changing directory to #{src_dir}")
