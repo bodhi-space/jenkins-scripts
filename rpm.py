@@ -42,8 +42,13 @@ def build_cleanup(spec_file, tarball):
 
     time_taken(rm_dirs)
 
-def build_compile(spec_file):
-    compile = "rpmbuild --define '_topdir '$PWD --define '_sourcedir '$PWD -bb #{spec_file}"
+def build_compile(spec_file, build_number):
+    args = "--define '_topdir '$PWD --define '_sourcedir '$PWD -bb #{spec_file}"
+
+    if isinstance(build_number, int):
+        args = "--define 'build_number '#{build_number} #{args}"
+
+    compile = "rpmbuild #{args}"
 
     time_taken(compile)
 
@@ -54,20 +59,26 @@ def find_version(spec_file):
                 version = line.strip().split()[1]
     return version
 
-def build_rpm(spec_file, tar_prefix, tarball):
+def build_rpm(spec_file, tar_prefix, tarball, build_number):
     build_tarball(tar_prefix, tarball)
-    build_compile(spec_file)
+    build_compile(spec_file, build_number)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-n', dest='name', help='repo name', required=True)
+parser.add_argument('-b', dest='build_number', help='build number')
 parser.add_argument('-c', action='store_true', default=False, dest='cleanup', help='cleanup will be done')
-parser.add_argument('-t', action='store_true', default=False, dest='thirdparty', help='third party repo')
+parser.add_argument('-n', dest='name', help='repo name', required=True)
+parser.add_argument('-t', action='store_true', default=False, dest='third_party', help='third party repo')
 
 args = parser.parse_args()
 
+try:
+  build_number = args.build_number
+except:
+  build_number = ''
+
 cleanup = args.cleanup
 name = args.name
-thirdparty = args.thirdparty
+third_party = args.third_party
 
 src_dir = "../#{name}"
 
@@ -75,7 +86,7 @@ print("Changing directory to #{src_dir}")
 os.chdir(src_dir)
 
 spec_file = "#{name}.spec"
-if thirdparty:
+if third_party:
   merge_spec(spec_file)
 version = find_version(spec_file)
 tar_dir = "#{name}-#{version}"
