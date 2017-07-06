@@ -6,6 +6,7 @@ from __future__ import print_function
 import argparse
 import interpy
 import os
+import re
 import subprocess
 import sys
 
@@ -20,8 +21,13 @@ def merge_spec(spec_file):
 
     time_taken(spec_cmd)
 
-def build_tarball(tar_prefix, tarball):
-    tarball_cmd = "git archive --format=tar.gz --prefix=#{tar_prefix} HEAD > #{tarball}"
+def build_tarball(tar_prefix, tarball, compression):
+    if compression == 'gz' or compression == 'xz':
+        tarball_cmd = "git archive --format=tar.gz --prefix=#{tar_prefix} HEAD > #{tarball}"
+    elif compression == 'bz2':
+        tarball_cmd = "git archive --format=tar --prefix=#{tar_prefix} HEAD | bzip2 -9 > #{tarball}"
+    else:
+        abort("The #{compression} format is not supported.")
 
     time_taken(tarball_cmd)
 
@@ -53,13 +59,22 @@ def build_compile(spec_file, build_number):
     time_taken(compile)
 
 def find_version(spec_file):
-    cmd = "rpmspec -q --queryformat='%{VERSION}\n' --target salt #{spec_file} | head -1"
+    cmd = "rpmspec -q --queryformat='%{VERSION}\n' #{spec_file} | head -1"
     version = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     version = version.strip()
     return version
 
-def build_rpm(spec_file, tar_prefix, tarball, build_number):
-    build_tarball(tar_prefix, tarball)
+def find_compression(spec_file):
+    # rpmspec doesn't support the tag SOURCE0, and the compression type should not be a marco
+    with open(spec_file) as origin_file:
+        for line in origin_file:
+            if line.lower().startswith('source0:'):
+                line = line.strip()
+                compression = re.sub(r'.*\.(.*$)', r'\1', line)
+    return compression
+
+def build_rpm(spec_file, tar_prefix, tarball, build_number, compression):
+    build_tarball(tar_prefix, tarball, compression)
     build_compile(spec_file, build_number)
 
 parser = argparse.ArgumentParser()
@@ -88,11 +103,12 @@ spec_file = "#{name}.spec"
 if third_party:
   merge_spec(spec_file)
 version = find_version(spec_file)
+compression = find_compression(spec_file)
 tar_dir = "#{name}-#{version}"
 tar_prefix = "#{tar_dir}/"
-tarball = "#{name}-#{version}.tar.gz"
+tarball = "#{name}-#{version}.tar.#{compression}"
 
 if cleanup:
     build_cleanup(spec_file, tarball)
 else:
-    build_rpm(spec_file, tar_prefix, tarball, build_number)
+    build_rpm(spec_file, tar_prefix, tarball, build_number, compression)
