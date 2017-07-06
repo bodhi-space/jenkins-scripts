@@ -53,10 +53,9 @@ def build_compile(spec_file, build_number):
     time_taken(compile)
 
 def find_version(spec_file):
-    with open(spec_file) as origin_file:
-        for line in origin_file:
-            if line.startswith('Version:'):
-                version = line.strip().split()[1]
+    cmd = "rpmspec -q --queryformat='%{VERSION}\n' --target salt #{spec_file} | head -1"
+    version = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+    version = version.strip()
     return version
 
 def build_rpm(spec_file, tar_prefix, tarball, build_number):
