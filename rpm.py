@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python2.p
 # coding: interpy
 
 from __future__ import print_function
@@ -59,9 +59,14 @@ def build_compile(spec_file, build_number):
     time_taken(compile)
 
 def find_version(spec_file):
-    cmd = "rpmspec -q --queryformat='%{VERSION}\n' #{spec_file} | head -1"
+    if os.path.isfile("/usr/bin/rpmspec"):
+        cmd = "rpmspec -q --queryformat='%{VERSION}\n' #{spec_file} | head -1"
+    else:
+        cmd = "grep '^Version:' #{spec_file} | awk '{ print $2 }' | head -1"
+
     version = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     version = version.strip()
+
     return version
 
 def find_compression(spec_file):
